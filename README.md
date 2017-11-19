@@ -19,6 +19,6 @@ Examples:
   archlinux-java-run --max 8 -- -jar /path/to/application.jar
     (launches java in version 8 or below)
 
-  archlinux-java-run --package jre -- -jar /path/to/application.jar
-    (launches Oracle's java from the AUR packages jre-*)
+  archlinux-java-run --package 'jre|jdk' -- -jar /path/to/application.jar
+    (launches Oracle's java from one of the jre-* or jdk-* AUR packages)
 ```

@@ -121,7 +121,7 @@ if [ "x$default" == "x" ]; then
   exit 1
 fi
 
-exp="($(seq $min $max|paste -sd,|sed 's/,/)|(/g'))"
+exp="($(seq $min $max|paste -sd'|'))"
 if [ "x$package" != "x" ]; then
   exp="java-${exp}-$package"
 else

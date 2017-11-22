@@ -164,7 +164,6 @@ if [[ " ${eligible[@]} " =~ " ${pref_version} " ]]; then
 elif [[ " ${eligible[@]} " =~ " java-$newest-openjdk " ]]; then
   /usr/lib/jvm/java-$newest-openjdk/bin/java "$@"
 else
-  random_choice=$(head -n1 <<< "${eligible[@]}")
-  /usr/lib/jvm/${random_choice}/bin/java "$@"
+  /usr/lib/jvm/$eligible/bin/java "$@"
 fi
 exit $?

@@ -129,8 +129,7 @@ else
 fi
 
 if [[ $default =~ $exp ]]; then
-  /usr/lib/jvm/$default/bin/java "$@"
-  exit $?
+  exec /usr/lib/jvm/$default/bin/java "$@"
 fi
 
 eligible=( )
@@ -160,10 +159,9 @@ pref_package=$(cut -d- -f3- <<< "$default")
 pref_version="java-$newest-${pref_package}"
 
 if [[ " ${eligible[@]} " =~ " ${pref_version} " ]]; then
-  /usr/lib/jvm/${pref_version}/bin/java "$@"
+  exec /usr/lib/jvm/${pref_version}/bin/java "$@"
 elif [[ " ${eligible[@]} " =~ " java-$newest-openjdk " ]]; then
-  /usr/lib/jvm/java-$newest-openjdk/bin/java "$@"
+  exec /usr/lib/jvm/java-$newest-openjdk/bin/java "$@"
 else
-  /usr/lib/jvm/$eligible/bin/java "$@"
+  exec /usr/lib/jvm/$eligible/bin/java "$@"
 fi
-exit $?

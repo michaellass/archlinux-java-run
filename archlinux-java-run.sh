@@ -116,13 +116,13 @@ done
 available=$(archlinux-java status | grep -Eo 'java\S*' | sort -rV)
 default=$(archlinux-java get)
 
-if [ "x$default" == "x" ]; then
+if [ -z "$default" ]; then
   echo "Your Java installation is not set up correctly. Try archlinux-java fix."
   exit 1
 fi
 
 exp="($(seq $min $max|paste -sd'|'))"
-if [ "x$package" != "x" ]; then
+if [ -n "$package" ]; then
   exp="^java-${exp}-($package)\$"
 else
   exp="^java-${exp}-.*\$"
@@ -146,12 +146,12 @@ for ver in $available; do
   fi
 done
 
-if [ "x${eligible[@]}" == "x" ]; then
+if [ -z "${eligible[@]}" ]; then
   echo "No suitable JVM found."
   echo "Available:        "$available
   echo "Min. required:    $min"
   echo "Max. required:    $max"
-  [ "x$package" != "x" ] && echo "Package required: $package"
+  [ -n "$package" ] && echo "Package required: $package"
   exit 1
 fi
 

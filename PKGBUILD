@@ -1,6 +1,6 @@
 # Maintainer: Michael Lass <bevan@bi-co.net>
 pkgname=archlinux-java-run
-pkgver=3
+pkgver=4
 pkgrel=1
 pkgdesc="Java Application Launcher for Arch Linux"
 arch=(any)
@@ -8,9 +8,9 @@ url="https://github.com/michaellass/archlinux-java-run"
 license=('MIT')
 depends=(bash java-runtime-common)
 source=(archlinux-java-run.sh LICENSE README.md)
-sha256sums=('a53a19af4a304bb25029039043fef79dd6d5f99eb015527aad48c73c353f466a'
+sha256sums=('28369a1f4732c755c1fc150ea76fd89a20a2d2305f3bb1f8a32b5aefe7d3e850'
             '02784d4f0a945304e4b8cf0f91ae04010d18c3c1472ce470e394f9e86ed31b97'
-            '1da3ca1b8c32910e7942d32b3eceb74f87404843dcc11e244ff723b4a0b3583a')
+            '1ea53d123d6113ff7779b8fe15daf55dbb16347a725b97dceaa0515db5bba7c7')
 
 package() {
   install -Dm755 archlinux-java-run.sh "${pkgdir}"/usr/bin/archlinux-java-run

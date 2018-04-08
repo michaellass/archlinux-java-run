@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# (c) 2017 Michael Lass
+# (c) 2017, 2018 Michael Lass
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,13 @@
 
 # Default boundaries for Java versions
 min=6
-max=10
+max=20
 
 function print_usage {
   cat << EOF
 
 archlinux-java-run [-a|--min MIN] [-b|--max MAX] [-p|--package PKG]
-                   [-h|--help]
+                   [-f|--feature FEATURE] [-h|--help]
                    -- JAVA_ARGS
 
 EOF
@@ -43,8 +43,11 @@ Examples:
   archlinux-java-run --max 8 -- -jar /path/to/application.jar
     (launches java in version 8 or below)
 
-  archlinux-java-run --package 'jre|jdk' -- -jar /path/to/application.jar
-    (launches Oracle's java from one of the jre-* or jdk-* AUR packages)
+  archlinux-java-run --package 'jre/jre|jdk' -- -jar /path/to/application.jar
+    (launches Oracle's java from one of the jre or jdk AUR packages)
+
+  archlinux-java-run --feature 'javafx' -- -jar /path/to/application.jar
+    (launches java which contains a javafx implementation)
 
 archlinux-java-run is a helper script used to launch Java applications
 that have specific demands on version or provider of the used JVM.
@@ -64,10 +67,12 @@ for arg; do
     --max)     args+=( -b ) ;;
     --help)    args+=( -h ) ;;
     --package) args+=( -p ) ;;
+    --feature) args+=( -f ) ;;
     *)         args+=( "$arg" ) ;;
   esac
 done
 set -- "${args[@]}"
+features=( )
 while :; do
     case "$1" in
     -a) case "$2" in
@@ -92,10 +97,19 @@ while :; do
         exit 0
         ;;
     -p) case "$2" in
-        ''|-*|*' '*)  echo "-p|--package expects a single literal argument"
+        ''|-*|*' '*)  echo "-p|--package expects exactly one argument"
                       exit 1
                       ;;
         *)  package=$2
+            shift
+            ;;
+        esac
+        ;;
+    -f) case "$2" in
+        ''|-*|*' '*)  echo "-f|--feature expects exactly one argument"
+                      exit 1
+                      ;;
+        *)  features+=( "$2" )
             shift
             ;;
         esac
@@ -128,40 +142,60 @@ else
   exp="^java-${exp}-.*\$"
 fi
 
-if [[ $default =~ $exp ]]; then
-  exec /usr/lib/jvm/$default/bin/java "$@"
-fi
 
 eligible=( )
-newest=0
 for ver in $available; do
   if [[ $ver =~ $exp ]]; then
-    jvm_ver=$(cut -d- -f2 <<< "$ver")
-    if [ $newest -eq 0 ]; then
-      newest=$jvm_ver
-    elif [ $newest -gt $jvm_ver ]; then
-      break
-    fi
-    eligible+=( $ver )
+
+    # Check for each of the required features by looking for a
+    # corresponding properties file
+    for ft in "${features[@]}"; do
+      ls /usr/lib/jvm/${ver%/jre}/jre/lib/${ft}.properties >/dev/null \
+                                                          2>/dev/null
+      if [ $? -ne 0 ]; then
+        continue 2
+      fi
+    done
+
+    eligible+=( "$ver" )
   fi
 done
 
-if [ -z "${eligible[@]}" ]; then
+if [ "${#eligible[@]}" -eq 0 ]; then
   echo "No suitable JVM found."
-  echo "Available:        "$available
-  echo "Min. required:    $min"
-  echo "Max. required:    $max"
-  [ -n "$package" ] && echo "Package required: $package"
+  echo "Available:         "$available
+  echo "Min. required:     "$min
+  echo "Max. required:     "$max
+  echo "Package required:  "$package
+  echo "Features required: "${features[@]}
   exit 1
 fi
+
+candidates=( )
+newest=0
+for ver in "${eligible[@]}"; do
+  # If default JRE is suitable, bypass any remaining logic
+  if [[ $default == $ver ]]; then
+    exec /usr/lib/jvm/$default/bin/java "$@"
+  fi
+
+  jvm_ver=$(cut -d- -f2 <<< "$ver")
+  if [ $newest -eq 0 ]; then
+    newest=$jvm_ver
+  elif [ $newest -gt $jvm_ver ]; then
+    break
+  fi
+
+  candidates+=( "$ver" )
+done
 
 pref_package=$(cut -d- -f3- <<< "$default")
 pref_version="java-$newest-${pref_package}"
 
-if [[ " ${eligible[@]} " =~ " ${pref_version} " ]]; then
+if [[ " ${candidates[@]} " =~ " ${pref_version} " ]]; then
   exec /usr/lib/jvm/${pref_version}/bin/java "$@"
-elif [[ " ${eligible[@]} " =~ " java-$newest-openjdk " ]]; then
+elif [[ " ${candidates[@]} " =~ " java-$newest-openjdk " ]]; then
   exec /usr/lib/jvm/java-$newest-openjdk/bin/java "$@"
 else
-  exec /usr/lib/jvm/$eligible/bin/java "$@"
+  exec /usr/lib/jvm/$candidates/bin/java "$@"
 fi

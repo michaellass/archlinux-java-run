@@ -12,13 +12,16 @@ this version, the one corresponding to the user's default JVM is used.
 ## Usage
 ```
 archlinux-java-run [-a|--min MIN] [-b|--max MAX] [-p|--package PKG]
-                   [-h|--help]
+                   [-f|--feature FEATURE] [-h|--help]
                    -- JAVA_ARGS
 
 Examples:
   archlinux-java-run --max 8 -- -jar /path/to/application.jar
     (launches java in version 8 or below)
 
-  archlinux-java-run --package 'jre|jdk' -- -jar /path/to/application.jar
-    (launches Oracle's java from one of the jre-* or jdk-* AUR packages)
+  archlinux-java-run --package 'jre/jre|jdk' -- -jar /path/to/application.jar
+    (launches Oracle's java from one of the jre or jdk AUR packages)
+
+  archlinux-java-run --feature 'javafx' -- -jar /path/to/application.jar
+    (launches java which contains a javafx implementation)
 ```

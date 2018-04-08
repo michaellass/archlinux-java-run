@@ -1,5 +1,15 @@
 # Changelog
 
+## v4
+2018-04-08
+
+* Allow requesting certain features like JavaFX. If specified,
+  archlinux-java-run checks for a corresponding properties file before
+  marking a JRE as eligible
+* Fix check for non-empty list of eligible JREs
+* Increase default upper bound for version number
+* Small updates to documentation
+
 ## v3
 2017-12-24
 

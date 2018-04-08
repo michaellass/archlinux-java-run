@@ -171,21 +171,20 @@ if [ "${#eligible[@]}" -eq 0 ]; then
   exit 1
 fi
 
+# If default JRE is suitable, bypass any remaining logic
+if [[ " ${eligible[@]} " =~ " $default " ]]; then
+  exec /usr/lib/jvm/$default/bin/java "$@"
+fi
+
 candidates=( )
 newest=0
 for ver in "${eligible[@]}"; do
-  # If default JRE is suitable, bypass any remaining logic
-  if [[ $default == $ver ]]; then
-    exec /usr/lib/jvm/$default/bin/java "$@"
-  fi
-
   jvm_ver=$(cut -d- -f2 <<< "$ver")
   if [ $newest -eq 0 ]; then
     newest=$jvm_ver
   elif [ $newest -gt $jvm_ver ]; then
     break
   fi
-
   candidates+=( "$ver" )
 done
 

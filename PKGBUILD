@@ -8,7 +8,7 @@ url="https://github.com/michaellass/archlinux-java-run"
 license=('MIT')
 depends=(bash java-runtime-common)
 source=(archlinux-java-run.sh LICENSE README.md)
-sha256sums=('28369a1f4732c755c1fc150ea76fd89a20a2d2305f3bb1f8a32b5aefe7d3e850'
+sha256sums=('edbc48a40285be6591fba9e9f68aa6c6770c251992cc585c00adb45db99e7460'
             '02784d4f0a945304e4b8cf0f91ae04010d18c3c1472ce470e394f9e86ed31b97'
             '1ea53d123d6113ff7779b8fe15daf55dbb16347a725b97dceaa0515db5bba7c7')
 

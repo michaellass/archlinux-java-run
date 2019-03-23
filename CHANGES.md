@@ -1,11 +1,12 @@
 # Changelog
 
 ## v5
-WORK IN PROGRESS
+2019-03-23
 
 * Detect features (for now only JavaFX) using proper tests instead of
   looking for properties files
 * Include a rudamentary build system
+* Improve help output
 
 ## v4
 2018-04-08

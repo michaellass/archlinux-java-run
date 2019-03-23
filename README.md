@@ -11,17 +11,20 @@ this version, the one corresponding to the user's default JVM is used.
 
 ## Usage
 ```
-archlinux-java-run [-a|--min MIN] [-b|--max MAX] [-p|--package PKG]
-                   [-f|--feature FEATURE] [-h|--help]
-                   -- JAVA_ARGS
-
-Examples:
-  archlinux-java-run --max 8 -- -jar /path/to/application.jar
-    (launches java in version 8 or below)
-
-  archlinux-java-run --package 'jre/jre|jdk' -- -jar /path/to/application.jar
-    (launches Oracle's java from one of the jre or jdk AUR packages)
-
-  archlinux-java-run --feature 'javafx' -- -jar /path/to/application.jar
-    (launches java which contains a javafx implementation)
+  archlinux-java-run [-a|--min MIN] [-b|--max MAX] [-p|--package PKG]
+                     [-f|--feature FEATURE] [-h|--help]
+                     -- JAVA_ARGS
 ```
+
+## Available features
+* javafx: Test if JVM provides support for JavaFX.
+
+## Examples
+* Launch java in version 8 or below:
+  `archlinux-java-run --max 8 -- -jar /path/to/application.jar`
+
+* Launch Oracle's java from one of the jre or jdk AUR packages:
+  `archlinux-java-run --package 'jre/jre|jdk' -- -jar /path/to/application.jar`
+
+* Launch a JVM that supports JavaFX:
+  `archlinux-java-run --feature 'javafx' -- -jar /path/to/application.jar`

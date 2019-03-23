@@ -7,4 +7,4 @@ TestJavaFX.jar: TestJavaFX.java
 	jar -cfe TestJavaFX.jar TestJavaFX TestJavaFX.class FXApplication.class
 
 clean:
-	rm *.class
+	rm -f *.class

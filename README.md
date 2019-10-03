@@ -12,7 +12,7 @@ this version, the one corresponding to the user's default JVM is used.
 ## Usage
 ```
   archlinux-java-run [-a|--min MIN] [-b|--max MAX] [-p|--package PKG]
-                     [-f|--feature FEATURE] [-h|--help]
+                     [-f|--feature FEATURE] [-h|--help] [-v|--verbose]
                      -- JAVA_ARGS
 ```
 

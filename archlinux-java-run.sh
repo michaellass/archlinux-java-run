@@ -34,7 +34,7 @@ function print_usage {
 
 USAGE:
   archlinux-java-run [-a|--min MIN] [-b|--max MAX] [-p|--package PKG]
-                     [-f|--feature FEATURE] [-h|--help]
+                     [-f|--feature FEATURE] [-h|--help] [-v|--verbose]
                      -- JAVA_ARGS
 
 EOF
@@ -79,11 +79,13 @@ for arg; do
     --help)    args+=( -h ) ;;
     --package) args+=( -p ) ;;
     --feature) args+=( -f ) ;;
+    --verbose) args+=( -v ) ;;
     *)         args+=( "$arg" ) ;;
   esac
 done
 set -- "${args[@]}"
 features=( )
+verbose=0
 while :; do
     case "$1" in
     -a) case "$2" in
@@ -124,6 +126,8 @@ while :; do
             shift
             ;;
         esac
+        ;;
+    -v) verbose=1
         ;;
     --) shift
         break
@@ -192,28 +196,34 @@ fi
 
 # If default JRE is suitable, bypass any remaining logic
 if [[ " ${eligible[@]} " =~ " $default " ]]; then
-  exec /usr/lib/jvm/$default/bin/java "$@"
-fi
-
-candidates=( )
-newest=0
-for ver in "${eligible[@]}"; do
-  jvm_ver=$(cut -d- -f2 <<< "$ver")
-  if [ $newest -eq 0 ]; then
-    newest=$jvm_ver
-  elif [ $newest -gt $jvm_ver ]; then
-    break
-  fi
-  candidates+=( "$ver" )
-done
-
-pref_package=$(cut -d- -f3- <<< "$default")
-pref_version="java-$newest-${pref_package}"
-
-if [[ " ${candidates[@]} " =~ " ${pref_version} " ]]; then
-  exec /usr/lib/jvm/${pref_version}/bin/java "$@"
-elif [[ " ${candidates[@]} " =~ " java-$newest-openjdk " ]]; then
-  exec /usr/lib/jvm/java-$newest-openjdk/bin/java "$@"
+  command="/usr/lib/jvm/$default/bin/java $@"
 else
-  exec /usr/lib/jvm/$candidates/bin/java "$@"
+  candidates=( )
+  newest=0
+  for ver in "${eligible[@]}"; do
+    jvm_ver=$(cut -d- -f2 <<< "$ver")
+    if [ $newest -eq 0 ]; then
+      newest=$jvm_ver
+    elif [ $newest -gt $jvm_ver ]; then
+      break
+    fi
+    candidates+=( "$ver" )
+  done
+
+  pref_package=$(cut -d- -f3- <<< "$default")
+  pref_version="java-$newest-${pref_package}"
+
+  if [[ " ${candidates[@]} " =~ " ${pref_version} " ]]; then
+    command="/usr/lib/jvm/${pref_version}/bin/java $@"
+  elif [[ " ${candidates[@]} " =~ " java-$newest-openjdk " ]]; then
+    command="/usr/lib/jvm/java-$newest-openjdk/bin/java $@"
+  else
+    command="/usr/lib/jvm/$candidates/bin/java $@"
+  fi
 fi
+
+if [ $verbose -eq 1 ]; then
+  echo "Executing command: $command"
+fi
+
+exec $command

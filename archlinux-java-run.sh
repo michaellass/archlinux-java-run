@@ -142,16 +142,6 @@ while :; do
     shift
 done
 
-feature_tests=( )
-for ft in "${features[@]}"; do
-    case "$ft" in
-    javafx) feature_tests+=( TestJavaFX )
-            ;;
-    *)      echo "Ignoring request for unknown feature $ft"
-            ;;
-    esac
-done
-
 available=$(archlinux-java status | grep -Eo 'java\S*' | sort -rV)
 default=$(archlinux-java get)
 
@@ -173,11 +163,16 @@ for ver in $available; do
   if [[ $ver =~ $exp ]]; then
 
     # Test for each of the required features
-    for ft in "${feature_tests[@]}"; do
-      /usr/lib/jvm/${ver}/bin/java -jar ${JAVADIR}/archlinux-java-run/${ft}.jar
-      if [ $? -ne 0 ]; then
-        continue 2
-      fi
+    for ft in "${features[@]}"; do
+      case "$ft" in
+      javafx) /usr/lib/jvm/${ver}/bin/java -jar ${JAVADIR}/archlinux-java-run/TestJavaFX.jar
+              if [ $? -ne 0 ]; then
+                continue 2
+              fi
+              ;;
+      *)      echo "Ignoring request for unknown feature $ft"
+              ;;
+      esac
     done
 
     eligible+=( "$ver" )

@@ -162,16 +162,26 @@ eligible=( )
 for ver in $available; do
   if [[ $ver =~ $exp ]]; then
 
+    major=$(echo $ver|cut -d- -f2)
+
     # Test for each of the required features
     for ft in "${features[@]}"; do
       case "$ft" in
-      javafx) /usr/lib/jvm/${ver}/bin/java -jar ${JAVADIR}/archlinux-java-run/TestJavaFX.jar
-              if [ $? -ne 0 ]; then
-                continue 2
-              fi
-              ;;
-      *)      echo "Ignoring request for unknown feature $ft"
-              ;;
+      javafx)
+        if [[ $major -lt 9 ]]; then
+          testcmd="/usr/lib/jvm/${ver}/bin/java -jar ${JAVADIR}/archlinux-java-run/TestJavaFX.jar"
+        else
+          mpath=$(eval echo "/usr/lib/jvm/{${ver},java-${major}-openjfx}/lib/{javafx.base.jar,javafx.controls.jar,javafx.fxml.jar,javafx.graphics.jar,javafx.media.jar,javafx.swing.jar,javafx.web.jar,javafx-swt.jar}" | tr ' ' :)
+          testcmd="/usr/lib/jvm/${ver}/bin/java --module-path $mpath --add-modules ALL-MODULE-PATH -jar ${JAVADIR}/archlinux-java-run/TestJavaFX.jar"
+        fi
+        $testcmd
+        if [ $? -ne 0 ]; then
+          continue 2
+        fi
+        ;;
+      *)
+        echo "Ignoring request for unknown feature $ft"
+        ;;
       esac
     done
 

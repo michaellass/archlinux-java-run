@@ -71,6 +71,60 @@ EXAMPLES:
 EOF
 }
 
+function generate_candiates {
+  local list=" "
+  local pref_package=$(cut -d- -f3- <<< "$default")
+
+  local exp="($(seq $min $max|paste -sd'|'))"
+  if [ -n "$package" ]; then
+    exp="^java-${exp}-(${package})\$"
+  else
+    exp="^java-${exp}-.*\$"
+  fi
+
+  # we want to try the user's default JRE first
+  if [[ $default =~ $exp ]]; then
+    list="$list$default "
+  fi
+
+  local subexp=""
+  for i in $(seq $max -1 $min); do
+
+    # try JRE that matches the user's default package
+    subexp="^java-${i}-${pref_package}\$"
+    for ver in $available; do
+      if [[ $ver =~ $exp && $ver =~ $subexp ]]; then
+        if [[ ! "$list" =~ " $ver " ]]; then
+          list="$list$ver "
+        fi
+      fi
+    done
+
+    # try openjdk
+    subexp="^java-${i}-openjdk\$"
+    for ver in $available; do
+      if [[ $ver =~ $exp && $ver =~ $subexp ]]; then
+        if [[ ! "$list" =~ " $ver " ]]; then
+          list="$list$ver "
+        fi
+      fi
+    done
+
+    # try everything else
+    subexp="^java-${i}-\S*$"
+    for ver in $available; do
+      if [[ $ver =~ $exp && $ver =~ $subexp ]]; then
+        if [[ ! "$list" =~ " $ver " ]]; then
+          list="$list$ver "
+        fi
+      fi
+    done
+
+  done
+
+  echo $list
+}
+
 args=( )
 for arg; do
   case "$arg" in
@@ -152,16 +206,10 @@ if [ -z "$default" ]; then
   exit 1
 fi
 
-exp="($(seq $min $max|paste -sd'|'))"
-if [ -n "$package" ]; then
-  exp="^java-${exp}-($package)\$"
-else
-  exp="^java-${exp}-.*\$"
-fi
-
+candidates=$(generate_candiates)
 
 eligible=( )
-for ver in $available; do
+for ver in $candidates; do
   if [[ $ver =~ $exp ]]; then
 
     major=$(cut -d- -f2 <<< "$ver")

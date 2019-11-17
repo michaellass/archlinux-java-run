@@ -128,7 +128,7 @@ function generate_candiates {
 }
 
 function test_javafx_support() {
-  if [[ $major -lt 9 ]]; then
+  if [ $major -lt 9 ]; then
     testcmd="/usr/lib/jvm/${ver}/bin/java -jar ${JAVADIR}/archlinux-java-run/TestJavaFX.jar"
   else
     mpath=$(eval echo "/usr/lib/jvm/{${ver},java-${major}-openjfx}/lib/{javafx.base,javafx.controls,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web,javafx-swt}.jar" | tr ' ' :)
@@ -264,7 +264,7 @@ for ver in $candidates; do
   for ft in "${features[@]}"; do
     case "$ft" in
     javafx)
-      if [[ $major -gt 8 ]]; then
+      if [ $major -gt 8 ]; then
         echo "Modifying java arguments to support system installation of JavaFX"
         additional_mpath=$(eval echo "/usr/lib/jvm/{${ver},java-${major}-openjfx}/lib/{javafx.base,javafx.controls,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web,javafx-swt}.jar" | tr ' ' :)
         extend_java_args module-path ${additional_mpath} ':'

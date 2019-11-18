@@ -58,7 +58,11 @@ EOF
   print_usage
   cat << EOF
 AVAILABLE FEATURES:
-  javafx: Test if JVM provides support for JavaFX.
+  javafx: Test if JVM provides support for JavaFX. For JVM versions above 8
+          this will modify the module path and the list of loaded modules to
+          make JavaFX available. CAUTION: Software developed for Java >8 using
+          JavaFX typically provides and loads its own copy of OpenJFX. The
+          feature should not be requested in this case.
 
 EXAMPLES:
   archlinux-java-run --max 8 -- -jar /path/to/application.jar

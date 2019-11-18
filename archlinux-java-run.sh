@@ -26,7 +26,7 @@
 min=6
 max=20
 
-VERSION=5
+VERSION=6
 JAVADIR=###JAVADIR###
 
 JAVAFX_MODULES=javafx.base,javafx.controls,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web

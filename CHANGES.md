@@ -1,5 +1,17 @@
 # Changelog
 
+## v6
+2019-11-18
+
+* Extend javafx feature detection to work for Java versions 9 and
+  higher. If available, archlinux-java-run will automatically
+  extend the module path and the list of loaded modules to make
+  JavaFX available.
+* Add -v|--verbose command line argument to enable verbose mode.
+  archlinux-java-run will output all performed tests as well as the
+  finally executed command.
+* Restructure code to help performance and readability.
+
 ## v5
 2019-03-23
 

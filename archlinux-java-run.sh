@@ -37,6 +37,7 @@ function print_usage {
 USAGE:
   archlinux-java-run [-a|--min MIN] [-b|--max MAX] [-p|--package PKG]
                      [-f|--feature FEATURE] [-h|--help] [-v|--verbose]
+                     [-d|--dry-run]
                      -- JAVA_ARGS
 
 EOF
@@ -179,12 +180,14 @@ for arg; do
     --package) args+=( -p ) ;;
     --feature) args+=( -f ) ;;
     --verbose) args+=( -v ) ;;
+    --dry-run) args+=( -d ) ;;
     *)         args+=( "$arg" ) ;;
   esac
 done
 set -- "${args[@]}"
 features=( )
 verbose=0
+dryrun=0
 while :; do
     case "$1" in
     -a) case "$2" in
@@ -227,6 +230,8 @@ while :; do
         esac
         ;;
     -v) verbose=1
+        ;;
+    -d) dryrun=1
         ;;
     --) shift
         break
@@ -290,6 +295,11 @@ for ver in $candidates; do
       ;;
     esac
   done
+
+  if [ $dryrun -eq 1 ]; then
+    echo "DRY-RUN - Generated command: /usr/lib/jvm/${ver}/bin/java ${java_args[@]}"
+    exit 0
+  fi
 
   if [ $verbose -eq 1 ]; then
     echo "Executing command: /usr/lib/jvm/${ver}/bin/java ${java_args[@]}"

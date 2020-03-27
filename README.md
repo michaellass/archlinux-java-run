@@ -13,6 +13,7 @@ this version, the one corresponding to the user's default JVM is used.
 ```
   archlinux-java-run [-a|--min MIN] [-b|--max MAX] [-p|--package PKG]
                      [-f|--feature FEATURE] [-h|--help] [-v|--verbose]
+                     [-d|--dry-run]
                      -- JAVA_ARGS
 ```
 

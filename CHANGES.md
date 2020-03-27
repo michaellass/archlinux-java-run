@@ -1,5 +1,17 @@
 # Changelog
 
+## v7
+2020-03-27
+
+* Add jdk as new testable feature. This checks for the presence of
+  javac.
+* Add -d|--dry-run command line argument to just output the generated
+  command instead of executing it.
+* Add -j|--java-home command line argument just print java location
+  instead of executing java. This allows to use archlinux-java-run to
+  determine a suitable value for JAVA_HOME or to run a certain version
+  of executables different to java. See help output for an example.
+
 ## v6
 2019-11-18
 

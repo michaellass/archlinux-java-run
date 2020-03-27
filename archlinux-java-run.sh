@@ -37,7 +37,7 @@ function print_usage {
 USAGE:
   archlinux-java-run [-a|--min MIN] [-b|--max MAX] [-p|--package PKG]
                      [-f|--feature FEATURE] [-h|--help] [-v|--verbose]
-                     [-d|--dry-run]
+                     [-d|--dry-run] [-j|--java-home]
                      -- JAVA_ARGS
 
 EOF
@@ -55,6 +55,11 @@ find a suitable version. If the user's default JVM is eligible, it will
 be used. Otherwise, if multiple eligible versions are installed, the
 newest Java generation is used. If multiple packages are available for
 this version, the one corresponding to the user's default JVM is used.
+
+By default, archlinux-java-run will execute a suitable version of java
+with the given JAVA_ARGS. When run with -j|--java-home, it just prints
+the location of a suitable java installation so that custom commands
+can be run.
 EOF
   print_usage
   cat << EOF
@@ -77,6 +82,10 @@ EXAMPLES:
 
   archlinux-java-run --feature 'javafx' -- -jar /path/to/application.jar
     (launches a JVM that supports JavaFX)
+
+  JAVA_HOME=\$(archlinux-java-run --min 11 --feature jdk --java-home) \\
+      && "\$JAVA_HOME"/bin/javac ...
+    (launches javac from a JDK in version 11 or newer)
 
 EOF
 }
@@ -174,20 +183,22 @@ function extend_java_args() {
 args=( )
 for arg; do
   case "$arg" in
-    --min)     args+=( -a ) ;;
-    --max)     args+=( -b ) ;;
-    --help)    args+=( -h ) ;;
-    --package) args+=( -p ) ;;
-    --feature) args+=( -f ) ;;
-    --verbose) args+=( -v ) ;;
-    --dry-run) args+=( -d ) ;;
-    *)         args+=( "$arg" ) ;;
+    --min)       args+=( -a ) ;;
+    --max)       args+=( -b ) ;;
+    --help)      args+=( -h ) ;;
+    --package)   args+=( -p ) ;;
+    --feature)   args+=( -f ) ;;
+    --verbose)   args+=( -v ) ;;
+    --dry-run)   args+=( -d ) ;;
+    --java-home) args+=( -j ) ;;
+    *)           args+=( "$arg" ) ;;
   esac
 done
 set -- "${args[@]}"
 features=( )
 verbose=0
 dryrun=0
+javahome=0
 while :; do
     case "$1" in
     -a) case "$2" in
@@ -232,6 +243,8 @@ while :; do
     -v) verbose=1
         ;;
     -d) dryrun=1
+        ;;
+    -j) javahome=1
         ;;
     --) shift
         break
@@ -282,6 +295,11 @@ for ver in $candidates; do
       ;;
     esac
   done
+
+  if [ $javahome -eq 1 ]; then
+    echo "/usr/lib/jvm/${ver}"
+    exit 0
+  fi
 
   for ft in "${features[@]}"; do
     case "$ft" in

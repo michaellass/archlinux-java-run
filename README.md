@@ -9,11 +9,16 @@ be used. Otherwise, if multiple eligible versions are installed, the
 newest Java generation is used. If multiple packages are available for
 this version, the one corresponding to the user's default JVM is used.
 
+By default, archlinux-java-run will execute a suitable version of java
+with the given JAVA_ARGS. When run with -j|--java-home, it just prints
+the location of a suitable java installation so that custom commands
+can be run.
+
 ## Usage
 ```
   archlinux-java-run [-a|--min MIN] [-b|--max MAX] [-p|--package PKG]
                      [-f|--feature FEATURE] [-h|--help] [-v|--verbose]
-                     [-d|--dry-run]
+                     [-d|--dry-run] [-j|--java-home]
                      -- JAVA_ARGS
 ```
 
@@ -37,3 +42,6 @@ this version, the one corresponding to the user's default JVM is used.
 
 * Launch a JVM that supports JavaFX:
   `archlinux-java-run --feature 'javafx' -- -jar /path/to/application.jar`
+
+* Launch javac from a JDK in version 11 or newer:
+  `JAVA_HOME=$(archlinux-java-run --min 11 --feature jdk --java-home) && "$JAVA_HOME"/bin/javac ...`

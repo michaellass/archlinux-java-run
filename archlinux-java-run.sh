@@ -64,6 +64,9 @@ AVAILABLE FEATURES:
           JavaFX typically provides and loads its own copy of OpenJFX. The
           feature should not be requested in this case.
 
+  jdk:    Test if the installation is a full JDK and not just a JRE, i.e., it
+          includes javac.
+
 EXAMPLES:
   archlinux-java-run --max 8 -- -jar /path/to/application.jar
     (launches java in version 8 or below)
@@ -142,6 +145,10 @@ function test_javafx_support() {
     echo "Testing JavaFX support: $testcmd"
   fi
   $testcmd
+}
+
+function test_jdk_support() {
+  test -x /usr/lib/jvm/${ver}/bin/javac
 }
 
 function extend_java_args() {
@@ -253,6 +260,12 @@ for ver in $candidates; do
   # Test for each of the required features
   for ft in "${features[@]}"; do
     case "$ft" in
+    jdk)
+      test_jdk_support
+      if [ $? -ne 0 ]; then
+        continue 2
+      fi
+      ;;
     javafx)
       test_javafx_support
       if [ $? -ne 0 ]; then

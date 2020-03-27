@@ -24,6 +24,9 @@ this version, the one corresponding to the user's default JVM is used.
   typically provides and loads its own copy of OpenJFX. The feature should not
   be requested in this case.
 
+* jdk: Test if the installation is a full JDK and not just a JRE, i.e., it
+  includes javac.
+
 ## Examples
 * Launch java in version 8 or below:
   `archlinux-java-run --max 8 -- -jar /path/to/application.jar`

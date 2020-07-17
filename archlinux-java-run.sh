@@ -180,6 +180,16 @@ function extend_java_args() {
   fi
 }
 
+function quote_args() {
+  for arg in "${java_args[@]}"; do
+    if [[ $arg =~ " " ]]; then
+      quoted_java_args+=("${arg@Q}")
+    else
+      quoted_java_args+=("${arg}")
+    fi
+  done
+}
+
 args=( )
 for arg; do
   case "$arg" in
@@ -196,10 +206,14 @@ for arg; do
 done
 set -- "${args[@]}"
 features=( )
+java_args=( )
+quoted_java_args=( )
 verbose=0
 dryrun=0
 javahome=0
+args_parsed=0
 while :; do
+  if [ $args_parsed -eq 0 ]; then
     case "$1" in
     -a) case "$2" in
         ''|*[!0-9]*)  echo "-a|--min expects an integer argument"
@@ -246,8 +260,7 @@ while :; do
         ;;
     -j) javahome=1
         ;;
-    --) shift
-        break
+    --) args_parsed=1
         ;;
     '') break
         ;;
@@ -256,10 +269,12 @@ while :; do
         exit 1
         ;;
     esac
-    shift
+  else
+    [ "$1" == '' ] && break
+    java_args+=("$1")
+  fi
+  shift
 done
-
-read -r -a java_args <<< "$@"
 
 available=$(archlinux-java status | grep -Eo 'java\S*' | sort -rV)
 default=$(archlinux-java get)
@@ -314,13 +329,15 @@ for ver in $candidates; do
     esac
   done
 
+  quote_args
+
   if [ $dryrun -eq 1 ]; then
-    echo "DRY-RUN - Generated command: /usr/lib/jvm/${ver}/bin/java ${java_args[@]}"
+    echo "DRY-RUN - Generated command: /usr/lib/jvm/${ver}/bin/java ${quoted_java_args[@]}"
     exit 0
   fi
 
   if [ $verbose -eq 1 ]; then
-    echo "Executing command: /usr/lib/jvm/${ver}/bin/java ${java_args[@]}"
+    echo "Executing command: /usr/lib/jvm/${ver}/bin/java ${quoted_java_args[@]}"
   fi
 
   exec /usr/lib/jvm/${ver}/bin/java "${java_args[@]}"

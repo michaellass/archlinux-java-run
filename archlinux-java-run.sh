@@ -22,6 +22,10 @@
 # SOFTWARE.
 #
 
+# This script uses `exec` on purpose to launch a suitable JRE before the end of
+# the script.
+# shellcheck disable=SC2093
+
 # Default boundaries for Java versions
 min=6
 max=20
@@ -90,11 +94,17 @@ EXAMPLES:
 EOF
 }
 
-function generate_candiates {
-  local list=" "
-  local pref_package=$(cut -d- -f3- <<< "$default")
+function is_in {
+  [[ "$1" =~ (^| )"$2"($| ) ]]
+}
 
-  local exp="($(seq $min $max|paste -sd'|'))"
+function generate_candiates {
+  local list
+  local pref_package
+  pref_package=$(cut -d- -f3- <<< "$default")
+
+  local exp
+  exp="($(seq $min $max|paste -sd'|'))"
   if [ -n "$package" ]; then
     exp="^java-${exp}-(${package})\$"
   else
@@ -113,7 +123,7 @@ function generate_candiates {
     subexp="^java-${i}-${pref_package}\$"
     for ver in $available; do
       if [[ $ver =~ $exp && $ver =~ $subexp ]]; then
-        if [[ ! "$list" =~ " $ver " ]]; then
+        if ! is_in "$list" "$ver"; then
           list="$list$ver "
         fi
       fi
@@ -123,7 +133,7 @@ function generate_candiates {
     subexp="^java-${i}-openjdk\$"
     for ver in $available; do
       if [[ $ver =~ $exp && $ver =~ $subexp ]]; then
-        if [[ ! "$list" =~ " $ver " ]]; then
+        if ! is_in "$list" "$ver"; then
           list="$list$ver "
         fi
       fi
@@ -133,7 +143,7 @@ function generate_candiates {
     subexp="^java-${i}-\S*$"
     for ver in $available; do
       if [[ $ver =~ $exp && $ver =~ $subexp ]]; then
-        if [[ ! "$list" =~ " $ver " ]]; then
+        if ! is_in "$list" "$ver"; then
           list="$list$ver "
         fi
       fi
@@ -141,35 +151,35 @@ function generate_candiates {
 
   done
 
-  echo $list
+  echo "$list" | xargs
 }
 
 function test_javafx_support() {
-  if [ $major -lt 9 ]; then
+  if [ "$major" -lt 9 ]; then
     testcmd="/usr/lib/jvm/${ver}/bin/java -jar ${JAVADIR}/archlinux-java-run/TestJavaFX.jar"
   else
     mpath=$(eval echo "/usr/lib/jvm/{${ver},java-${major}-openjfx}/lib/{javafx.base,javafx.controls,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web,javafx-swt}.jar" | tr ' ' :)
     testcmd="/usr/lib/jvm/${ver}/bin/java --module-path ${mpath} --add-modules ALL-MODULE-PATH -jar ${JAVADIR}/archlinux-java-run/TestJavaFX.jar"
   fi
-  if [ $verbose -eq 1 ]; then
+  if [ "$verbose" -eq 1 ]; then
     echo "Testing JavaFX support: $testcmd"
   fi
   $testcmd
 }
 
 function test_jdk_support() {
-  test -x /usr/lib/jvm/${ver}/bin/javac
+  test -x /usr/lib/jvm/"$ver"/bin/javac
 }
 
 function extend_java_args() {
   local updated=0
   for i in "${!java_args[@]}"; do
     case "${java_args[$i]}" in
-    --$1=*)
+    --"$1"=*)
       java_args[$i]="${java_args[$i]}$3$2"
       updated=1
       ;;
-    --$1)
+    --"$1")
       java_args[$((i+1))]="${java_args[$((i+1))]}$3$2"
       updated=1
       ;;
@@ -276,7 +286,7 @@ while :; do
   shift
 done
 
-available=$(archlinux-java status | grep -Eo 'java\S*' | sort -rV)
+available=$(archlinux-java status | grep -Eo 'java\S*' | sort -rV | xargs)
 default=$(archlinux-java get)
 
 if [ -z "$default" ]; then
@@ -294,14 +304,12 @@ for ver in $candidates; do
   for ft in "${features[@]}"; do
     case "$ft" in
     jdk)
-      test_jdk_support
-      if [ $? -ne 0 ]; then
+      if ! test_jdk_support; then
         continue 2
       fi
       ;;
     javafx)
-      test_javafx_support
-      if [ $? -ne 0 ]; then
+      if ! test_javafx_support; then
         continue 2
       fi
       ;;
@@ -319,11 +327,11 @@ for ver in $candidates; do
   for ft in "${features[@]}"; do
     case "$ft" in
     javafx)
-      if [ $major -gt 8 ]; then
+      if [ "$major" -gt 8 ]; then
         echo "Modifying java arguments to support system installation of JavaFX"
         additional_mpath=$(eval echo "/usr/lib/jvm/{${ver},java-${major}-openjfx}/lib/{javafx.base,javafx.controls,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web,javafx-swt}.jar" | tr ' ' :)
-        extend_java_args module-path ${additional_mpath} ':'
-        extend_java_args add-modules ${JAVAFX_MODULES} ','
+        extend_java_args module-path "$additional_mpath" ':'
+        extend_java_args add-modules "$JAVAFX_MODULES" ','
       fi
       ;;
     esac
@@ -332,24 +340,24 @@ for ver in $candidates; do
   quote_args
 
   if [ $dryrun -eq 1 ]; then
-    echo "DRY-RUN - Generated command: /usr/lib/jvm/${ver}/bin/java ${quoted_java_args[@]}"
+    echo "DRY-RUN - Generated command: /usr/lib/jvm/${ver}/bin/java ${quoted_java_args[*]}"
     exit 0
   fi
 
   if [ $verbose -eq 1 ]; then
-    echo "Executing command: /usr/lib/jvm/${ver}/bin/java ${quoted_java_args[@]}"
+    echo "Executing command: /usr/lib/jvm/${ver}/bin/java ${quoted_java_args[*]}"
   fi
 
-  exec /usr/lib/jvm/${ver}/bin/java "${java_args[@]}"
+  exec /usr/lib/jvm/"$ver"/bin/java "${java_args[@]}"
 
 done
 
 echo "No suitable JVM found."
-echo "Available:         "$available
-echo "Default:           "$default
-echo "Min. required:     "$min
-echo "Max. required:     "$max
-echo "Package required:  "$package
-echo "Candidates:        "$candidates
-echo "Features required: "${features[@]}
+echo "Available:         $available"
+echo "Default:           $default"
+echo "Min. required:     $min"
+echo "Max. required:     $max"
+echo "Package required:  $package"
+echo "Candidates:        $candidates"
+echo "Features required: ${features[*]}"
 exit 1

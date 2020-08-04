@@ -1,5 +1,11 @@
 # Changelog
 
+## v8
+2020-08-04
+
+* Fix handling of quoted java_args that contain spaces (#2)
+* Clean up code by resolving potential issues identified by shellcheck (#2, #3)
+
 ## v7
 2020-03-27
 

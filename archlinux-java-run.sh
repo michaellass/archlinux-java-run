@@ -106,9 +106,9 @@ function generate_candiates {
   local exp
   exp="($(seq $min $max|paste -sd'|'))"
   if [ -n "$package" ]; then
-    exp="^java-${exp}-(${package})\$"
+    exp="^(java|zulu(-embedded)?)-${exp}-(${package})\$"
   else
-    exp="^java-${exp}-.*\$"
+    exp="^(java-${exp}-.*|zulu(-embedded)?-${exp})\$"
   fi
 
   # we want to try the user's default JRE first
@@ -121,6 +121,16 @@ function generate_candiates {
 
     # try JRE that matches the user's default package
     subexp="^java-${i}-${pref_package}\$"
+    for ver in $available; do
+      if [[ $ver =~ $exp && $ver =~ $subexp ]]; then
+        if ! is_in "$list" "$ver"; then
+          list="$list$ver "
+        fi
+      fi
+    done
+
+    # try zulu
+    subexp="^zulu(-embedded)?-${i}$"
     for ver in $available; do
       if [[ $ver =~ $exp && $ver =~ $subexp ]]; then
         if ! is_in "$list" "$ver"; then
@@ -286,7 +296,7 @@ while :; do
   shift
 done
 
-available=$(archlinux-java status | grep -Eo 'java\S*' | sort -rV | xargs)
+available=$(archlinux-java status | grep -Eo '(java|zulu)\S*' | sort -rV | xargs)
 default=$(archlinux-java get)
 
 if [ -z "$default" ]; then

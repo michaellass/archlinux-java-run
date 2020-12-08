@@ -98,10 +98,22 @@ function is_in {
   [[ "$1" =~ (^| )"$2"($| ) ]]
 }
 
+function normalize_name {
+  re_default="^java-([0-9]+)-(.+)$"
+  re_short="^(.+)-([0-9]+)$"
+  if [[ $1 =~ $re_default ]]; then
+    echo -n "$1"
+  elif [[ $1 =~ $re_short ]]; then
+    echo -n "java-${BASH_REMATCH[2]}-${BASH_REMATCH[1]}"
+  else
+    echo "ERROR: Could not parse JRE name $1" 1>&2
+  fi
+}
+
 function generate_candiates {
   local list
   local pref_package
-  pref_package=$(cut -d- -f3- <<< "$default")
+  pref_package=$(cut -d- -f3- <<< "$(normalize_name "$default")")
 
   local exp
   exp="($(seq $min $max|paste -sd'|'))"
@@ -112,7 +124,7 @@ function generate_candiates {
   fi
 
   # we want to try the user's default JRE first
-  if [[ $default =~ $exp ]]; then
+  if [[ $(normalize_name "$default") =~ $exp ]]; then
     list="$list$default "
   fi
 
@@ -122,7 +134,8 @@ function generate_candiates {
     # try JRE that matches the user's default package
     subexp="^java-${i}-${pref_package}\$"
     for ver in $available; do
-      if [[ $ver =~ $exp && $ver =~ $subexp ]]; then
+      norm_ver=$(normalize_name "$ver")
+      if [[ $norm_ver =~ $exp && $norm_ver =~ $subexp ]]; then
         if ! is_in "$list" "$ver"; then
           list="$list$ver "
         fi
@@ -132,7 +145,8 @@ function generate_candiates {
     # try openjdk
     subexp="^java-${i}-openjdk\$"
     for ver in $available; do
-      if [[ $ver =~ $exp && $ver =~ $subexp ]]; then
+      norm_ver=$(normalize_name "$ver")
+      if [[ $norm_ver =~ $exp && $norm_ver =~ $subexp ]]; then
         if ! is_in "$list" "$ver"; then
           list="$list$ver "
         fi
@@ -142,7 +156,8 @@ function generate_candiates {
     # try everything else
     subexp="^java-${i}-\S*$"
     for ver in $available; do
-      if [[ $ver =~ $exp && $ver =~ $subexp ]]; then
+      norm_ver=$(normalize_name "$ver")
+      if [[ $norm_ver =~ $exp && $norm_ver =~ $subexp ]]; then
         if ! is_in "$list" "$ver"; then
           list="$list$ver "
         fi
@@ -286,7 +301,7 @@ while :; do
   shift
 done
 
-available=$(archlinux-java status | grep -Eo 'java\S*' | sort -rV | xargs)
+available=$(archlinux-java status | tail -n+2 | cut -d' ' -f3 | sort -rV -t- -k2 | xargs)
 default=$(archlinux-java get)
 
 if [ -z "$default" ]; then

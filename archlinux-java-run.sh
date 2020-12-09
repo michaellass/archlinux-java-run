@@ -94,19 +94,23 @@ EXAMPLES:
 EOF
 }
 
+function echo_stderr {
+  echo "$1" 1>&2
+}
+
 function is_in {
   [[ "$1" =~ (^| )"$2"($| ) ]]
 }
 
 function normalize_name {
-  re_default="^java-([0-9]+)-(.+)$"
-  re_short="^(.+)-([0-9]+)$"
+  re_default="^java-([0-9]+)-(.+)\$"
+  re_short="^(.+)-([0-9]+)\$"
   if [[ $1 =~ $re_default ]]; then
     echo -n "$1"
   elif [[ $1 =~ $re_short ]]; then
     echo -n "java-${BASH_REMATCH[2]}-${BASH_REMATCH[1]}"
   else
-    echo "ERROR: Could not parse JRE name $1" 1>&2
+    echo_stderr "ERROR: Could not parse JRE name $1"
   fi
 }
 
@@ -125,10 +129,10 @@ function generate_candiates {
 
   # we want to try the user's default JRE first
   if [[ $(normalize_name "$default") =~ $exp ]]; then
-    list="$list$default "
+    list="$default "
   fi
 
-  local subexp=""
+  local subexp
   for i in $(seq $max -1 $min); do
 
     # try JRE that matches the user's default package
@@ -142,7 +146,7 @@ function generate_candiates {
       fi
     done
 
-    # try openjdk
+    # try openjdk since it is Arch's default
     subexp="^java-${i}-openjdk\$"
     for ver in $available; do
       norm_ver=$(normalize_name "$ver")
@@ -154,10 +158,9 @@ function generate_candiates {
     done
 
     # try everything else
-    subexp="^java-${i}-\S*$"
     for ver in $available; do
       norm_ver=$(normalize_name "$ver")
-      if [[ $norm_ver =~ $exp && $norm_ver =~ $subexp ]]; then
+      if [[ $norm_ver =~ $exp ]]; then
         if ! is_in "$list" "$ver"; then
           list="$list$ver "
         fi
@@ -177,7 +180,7 @@ function test_javafx_support() {
     testcmd="/usr/lib/jvm/${ver}/bin/java --module-path ${mpath} --add-modules ALL-MODULE-PATH -jar ${JAVADIR}/archlinux-java-run/TestJavaFX.jar"
   fi
   if [ "$verbose" -eq 1 ]; then
-    echo "Testing JavaFX support: $testcmd"
+    echo_stderr "Testing JavaFX support: $testcmd"
   fi
   $testcmd
 }
@@ -241,7 +244,7 @@ while :; do
   if [ $args_parsed -eq 0 ]; then
     case "$1" in
     -a) case "$2" in
-        ''|*[!0-9]*)  echo "-a|--min expects an integer argument"
+        ''|*[!0-9]*)  echo_stderr "-a|--min expects an integer argument"
                       exit 1
                       ;;
         *)  min=$2
@@ -250,7 +253,7 @@ while :; do
         esac
         ;;
     -b) case "$2" in
-        ''|*[!0-9]*)  echo "-b|--max expects an integer argument"
+        ''|*[!0-9]*)  echo_stderr "-b|--max expects an integer argument"
                       exit 1
                       ;;
         *)  max=$2
@@ -262,7 +265,7 @@ while :; do
         exit 0
         ;;
     -p) case "$2" in
-        ''|-*|*' '*)  echo "-p|--package expects exactly one argument"
+        ''|-*|*' '*)  echo_stderr "-p|--package expects exactly one argument"
                       exit 1
                       ;;
         *)  package=$2
@@ -271,7 +274,7 @@ while :; do
         esac
         ;;
     -f) case "$2" in
-        ''|-*|*' '*)  echo "-f|--feature expects exactly one argument"
+        ''|-*|*' '*)  echo_stderr "-f|--feature expects exactly one argument"
                       exit 1
                       ;;
         *)  features+=( "$2" )
@@ -289,8 +292,8 @@ while :; do
         ;;
     '') break
         ;;
-    *)  echo "Unknown argument: $1"
-        print_usage
+    *)  echo_stderr "Unknown argument: $1"
+        print_usage 1>&2
         exit 1
         ;;
     esac
@@ -305,7 +308,7 @@ available=$(archlinux-java status | tail -n+2 | cut -d' ' -f3 | sort -rV -t- -k2
 default=$(archlinux-java get)
 
 if [ -z "$default" ]; then
-  echo "Your Java installation is not set up correctly. Try archlinux-java fix."
+  echo_stderr "Your Java installation is not set up correctly. Try archlinux-java fix."
   exit 1
 fi
 
@@ -329,7 +332,7 @@ for ver in $candidates; do
       fi
       ;;
     *)
-      echo "Ignoring request for unknown feature $ft"
+      echo_stderr "Ignoring request for unknown feature $ft"
       ;;
     esac
   done
@@ -343,7 +346,7 @@ for ver in $candidates; do
     case "$ft" in
     javafx)
       if [ "$major" -gt 8 ]; then
-        echo "Modifying java arguments to support system installation of JavaFX"
+        echo_stderr "Modifying java arguments to support system installation of JavaFX"
         additional_mpath=$(eval echo "/usr/lib/jvm/{${ver},java-${major}-openjfx}/lib/{javafx.base,javafx.controls,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web,javafx-swt}.jar" | tr ' ' :)
         extend_java_args module-path "$additional_mpath" ':'
         extend_java_args add-modules "$JAVAFX_MODULES" ','
@@ -360,19 +363,19 @@ for ver in $candidates; do
   fi
 
   if [ $verbose -eq 1 ]; then
-    echo "Executing command: /usr/lib/jvm/${ver}/bin/java ${quoted_java_args[*]}"
+    echo_stderr "Executing command: /usr/lib/jvm/${ver}/bin/java ${quoted_java_args[*]}"
   fi
 
   exec /usr/lib/jvm/"$ver"/bin/java "${java_args[@]}"
 
 done
 
-echo "No suitable JVM found."
-echo "Available:         $available"
-echo "Default:           $default"
-echo "Min. required:     $min"
-echo "Max. required:     $max"
-echo "Package required:  $package"
-echo "Candidates:        $candidates"
-echo "Features required: ${features[*]}"
+echo_stderr "No suitable JVM found."
+echo_stderr "Available:         $available"
+echo_stderr "Default:           $default"
+echo_stderr "Min. required:     $min"
+echo_stderr "Max. required:     $max"
+echo_stderr "Package required:  $package"
+echo_stderr "Candidates:        $candidates"
+echo_stderr "Features required: ${features[*]}"
 exit 1

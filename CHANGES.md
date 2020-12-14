@@ -1,5 +1,13 @@
 # Changelog
 
+## v9
+2020-12-14
+
+* Support JREs named ${package}-${version} instead of
+  java-${version}-${package}, such as the zulu packages in AUR (#7)
+* Send all unrequested output to stderr instead of stdout
+* Miscellaneous code cleanup
+
 ## v8
 2020-08-04
 

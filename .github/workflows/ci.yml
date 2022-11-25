@@ -13,14 +13,15 @@ jobs:
   shellcheck:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: ludeeus/action-shellcheck@0.4.1
+    - uses: actions/checkout@v3
+    - uses: ludeeus/action-shellcheck@1.1.0
   build-tests:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-java@v1.4.3
+    - uses: actions/checkout@v3
+    - uses: actions/setup-java@v2
       with:
+        distribution: zulu
         java-version: 8
         java-package: jdk+fx
     - run: cd tests && make -B

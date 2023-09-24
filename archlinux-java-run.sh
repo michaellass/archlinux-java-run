@@ -120,7 +120,7 @@ function generate_candiates {
   pref_package=$(cut -d- -f3- <<< "$(normalize_name "$default")")
 
   local exp
-  exp="($(seq $min $max|paste -sd'|'))"
+  exp="($(seq "$min" "$max"|paste -sd'|'))"
   if [ -n "$package" ]; then
     exp="^java-${exp}-(${package})\$"
   else
@@ -133,7 +133,7 @@ function generate_candiates {
   fi
 
   local subexp
-  for i in $(seq $max -1 $min); do
+  for i in $(seq "$max" -1 "$min"); do
 
     # try JRE that matches the user's default package
     subexp="^java-${i}-${pref_package}\$"
@@ -192,13 +192,13 @@ function test_jdk_support() {
 function extend_java_args() {
   local updated=0
   for i in "${!java_args[@]}"; do
-    case "${java_args[$i]}" in
+    case "${java_args[i]}" in
     --"$1"=*)
-      java_args[$i]="${java_args[$i]}$3$2"
+      java_args[i]="${java_args[i]}$3$2"
       updated=1
       ;;
     --"$1")
-      java_args[$((i+1))]="${java_args[$((i+1))]}$3$2"
+      java_args[i+1]="${java_args[i+1]}$3$2"
       updated=1
       ;;
     esac

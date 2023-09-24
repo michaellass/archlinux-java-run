@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# (c) 2017, 2018, 2019, 2020 Michael Lass
+# (c) 2017, 2018, 2019, 2020, 2023 Michael Lass
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,9 +28,9 @@
 
 # Default boundaries for Java versions
 min=6
-max=20
+max=30
 
-VERSION=9
+VERSION=10
 JAVADIR=###JAVADIR###
 
 JAVAFX_MODULES=javafx.base,javafx.controls,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web

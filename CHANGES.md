@@ -1,5 +1,10 @@
 # Changelog
 
+## v10
+2023-09-24
+
+* Increase default max version from 20 to 30
+
 ## v9
 2020-12-14
 

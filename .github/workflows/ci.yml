@@ -13,13 +13,13 @@ jobs:
   shellcheck:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: ludeeus/action-shellcheck@1.1.0
+    - uses: actions/checkout@v4
+    - uses: ludeeus/action-shellcheck@2.0.0
   build-tests:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-java@v2
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v4
       with:
         distribution: zulu
         java-version: 8

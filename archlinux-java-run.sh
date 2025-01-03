@@ -105,10 +105,13 @@ function is_in {
 function normalize_name {
   re_default="^java-([0-9]+)-(.+)\$"
   re_short="^(.+)-([0-9]+)\$"
+  re_split="^([-A-Za-z]*[A-Za-z]+)-?([0-9]+)-(.+)\$"
   if [[ $1 =~ $re_default ]]; then
     echo -n "$1"
   elif [[ $1 =~ $re_short ]]; then
     echo -n "java-${BASH_REMATCH[2]}-${BASH_REMATCH[1]}"
+  elif [[ $1 =~ $re_split ]]; then
+    echo -n "java-${BASH_REMATCH[2]}-${BASH_REMATCH[1]}-${BASH_REMATCH[3]}"
   else
     echo_stderr "ERROR: Could not parse JRE name $1"
   fi
@@ -316,7 +319,7 @@ candidates=$(generate_candiates)
 
 for ver in $candidates; do
 
-  major=$(cut -d- -f2 <<< "$ver")
+  major=$(normalize_name "$ver" | cut -d- -f2)
 
   # Test for each of the required features
   for ft in "${features[@]}"; do

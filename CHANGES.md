@@ -1,5 +1,12 @@
 # Changelog
 
+## v11
+2025-01-03
+
+* Support more naming schemes, such as ${prefix}[-]${version}-${suffix} (#10)
+* Do not hardcode min and max versions
+* Minor code cleanup based on shellcheck suggestions
+
 ## v10
 2023-09-24
 

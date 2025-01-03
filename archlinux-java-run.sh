@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# (c) 2017, 2018, 2019, 2020, 2023 Michael Lass
+# (c) 2017, 2018, 2019, 2020, 2023, 2024 Michael Lass
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 # This script uses `exec` on purpose to launch a suitable JRE before the end of
 # the script.
 # shellcheck disable=SC2093
-VERSION=10
+VERSION=11
 JAVADIR=###JAVADIR###
 
 JAVAFX_MODULES=javafx.base,javafx.controls,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web

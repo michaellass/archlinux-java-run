@@ -25,11 +25,6 @@
 # This script uses `exec` on purpose to launch a suitable JRE before the end of
 # the script.
 # shellcheck disable=SC2093
-
-# Default boundaries for Java versions
-min=6
-max=30
-
 VERSION=10
 JAVADIR=###JAVADIR###
 
@@ -116,6 +111,27 @@ function normalize_name {
     echo_stderr "ERROR: Could not parse JRE name $1"
   fi
 }
+
+available=$(archlinux-java status | tail -n+2 | cut -d' ' -f3 | sort -rV -t- -k2 | xargs)
+default=$(archlinux-java get)
+
+if [ -z "$default" ]; then
+  echo_stderr "Your Java installation is not set up correctly. Try archlinux-java fix."
+  exit 1
+fi
+
+# Default boundaries for Java versions
+min=-1
+max=-1
+for ver in $available; do
+  major=$(normalize_name "$ver" | cut -d- -f2)
+  if [ "$major" -gt "$max" ]; then
+    max="$major"
+  fi
+  if [ "$major" -lt "$min" ] || [ "$min" -eq -1 ]; then
+    min="$major"
+  fi
+done
 
 function generate_candiates {
   local list
@@ -306,14 +322,6 @@ while :; do
   fi
   shift
 done
-
-available=$(archlinux-java status | tail -n+2 | cut -d' ' -f3 | sort -rV -t- -k2 | xargs)
-default=$(archlinux-java get)
-
-if [ -z "$default" ]; then
-  echo_stderr "Your Java installation is not set up correctly. Try archlinux-java fix."
-  exit 1
-fi
 
 candidates=$(generate_candiates)
 

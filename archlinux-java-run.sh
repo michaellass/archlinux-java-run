@@ -25,7 +25,7 @@
 # This script uses `exec` on purpose to launch a suitable JRE before the end of
 # the script.
 # shellcheck disable=SC2093
-VERSION=11
+VERSION=12
 JAVADIR=###JAVADIR###
 
 JAVAFX_MODULES=javafx.base,javafx.controls,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web

@@ -86,6 +86,8 @@ EXAMPLES:
       && "\$JAVA_HOME"/bin/javac ...
     (launches javac from a JDK in version 11 or newer)
 
+  archlinux-java-run --min 25 --max 25 --exec -- bash -i
+    (launches interactive bash with Java 25 set as \$JAVA_HOME and as first element in \$PATH)
 EOF
 }
 

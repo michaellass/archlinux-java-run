@@ -36,8 +36,8 @@ function print_usage {
 USAGE:
   archlinux-java-run [-a|--min MIN] [-b|--max MAX] [-p|--package PKG]
                      [-f|--feature FEATURE] [-h|--help] [-v|--verbose]
-                     [-d|--dry-run] [-j|--java-home]
-                     -- JAVA_ARGS
+                     [-d|--dry-run] [-j|--java-home] [-e|--exec]
+                     -- <JAVA_ARGS | EXEC_ARGS>
 
 EOF
 }
@@ -191,6 +191,23 @@ function generate_candiates {
   echo "$list" | xargs
 }
 
+function env_switch_java_home() {
+  quote_args
+
+  if [ $dryrun -eq 1 ]; then
+    echo "DRY-RUN - Generated command: env JAVA_HOME=/usr/lib/jvm/${ver} PATH=/usr/lib/jvm/${ver}/bin:\$PATH exec ${quoted_java_args[*]}"
+    exit 0
+  fi
+
+  if [ $verbose -eq 1 ]; then
+    echo_stderr "Executing command: JAVA_HOME=/usr/lib/jvm/${ver} PATH=/usr/lib/jvm/${ver}/bin:\$PATH exec ${quoted_java_args[*]}"
+  fi
+
+  export JAVA_HOME="/usr/lib/jvm/${ver}"
+  export PATH="/usr/lib/jvm/${ver}/bin:$PATH"
+  exec "${java_args[@]}"
+}
+
 function test_javafx_support() {
   if [ "$major" -lt 9 ]; then
     testcmd="/usr/lib/jvm/${ver}/bin/java -jar ${JAVADIR}/archlinux-java-run/TestJavaFX.jar"
@@ -243,6 +260,7 @@ for arg; do
     --min)       args+=( -a ) ;;
     --max)       args+=( -b ) ;;
     --help)      args+=( -h ) ;;
+    --exec)      args+=( -e ) ;;
     --package)   args+=( -p ) ;;
     --feature)   args+=( -f ) ;;
     --verbose)   args+=( -v ) ;;
@@ -256,6 +274,7 @@ features=( )
 java_args=( )
 quoted_java_args=( )
 verbose=0
+exec=0
 dryrun=0
 javahome=0
 args_parsed=0
@@ -307,6 +326,8 @@ while :; do
         ;;
     -j) javahome=1
         ;;
+    -e) exec=1
+        ;;
     --) args_parsed=1
         ;;
     '') break
@@ -350,6 +371,11 @@ for ver in $candidates; do
 
   if [ $javahome -eq 1 ]; then
     echo "/usr/lib/jvm/${ver}"
+    exit 0
+  fi
+
+  if [ $exec -eq 1 ]; then
+    env_switch_java_home
     exit 0
   fi
 

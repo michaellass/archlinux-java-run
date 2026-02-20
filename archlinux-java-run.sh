@@ -37,7 +37,7 @@ USAGE:
   archlinux-java-run [-a|--min MIN] [-b|--max MAX] [-p|--package PKG]
                      [-f|--feature FEATURE] [-h|--help] [-v|--verbose]
                      [-d|--dry-run] [-j|--java-home] [-e|--exec]
-                     -- <JAVA_ARGS | EXEC_ARGS>
+                     -- <JAVA_ARGS | EXEC_CMD>
 
 EOF
 }
@@ -58,7 +58,9 @@ this version, the one corresponding to the user's default JVM is used.
 By default, archlinux-java-run will execute a suitable version of java
 with the given JAVA_ARGS. When run with -j|--java-home, it just prints
 the location of a suitable java installation so that custom commands
-can be run.
+can be run. When run with -e|--exec, it will run EXEC_CMD in an
+environment where \$JAVA_HOME and \$PATH is set so that the appropriate
+Java version is used.
 EOF
   print_usage
   cat << EOF
@@ -193,7 +195,7 @@ function generate_candiates {
   echo "$list" | xargs
 }
 
-function env_switch_java_home() {
+function exec_in_modified_env() {
   quote_args
 
   if [ $dryrun -eq 1 ]; then
@@ -377,8 +379,7 @@ for ver in $candidates; do
   fi
 
   if [ $exec -eq 1 ]; then
-    env_switch_java_home
-    exit 0
+    exec_in_modified_env
   fi
 
   for ft in "${features[@]}"; do

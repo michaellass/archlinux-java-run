@@ -1,10 +1,10 @@
 # Changelog
 
 ## v12
-To be released
+2026-02-20
 
 * Support running arbitrary programs with $JAVA_HOME and $PATH set according
-  to requested Java version (#11)
+  to requested Java version (#11, #12)
 
 ## v11
 2025-01-03

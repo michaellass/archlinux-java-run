@@ -12,14 +12,16 @@ this version, the one corresponding to the user's default JVM is used.
 By default, archlinux-java-run will execute a suitable version of java
 with the given JAVA_ARGS. When run with -j|--java-home, it just prints
 the location of a suitable java installation so that custom commands
-can be run.
+can be run. When run with -e|--exec, it will run EXEC_CMD in an
+environment where $JAVA_HOME and $PATH is set so that the appropriate
+Java version is used.
 
 ## Usage
 ```
   archlinux-java-run [-a|--min MIN] [-b|--max MAX] [-p|--package PKG]
                      [-f|--feature FEATURE] [-h|--help] [-v|--verbose]
-                     [-d|--dry-run] [-j|--java-home]
-                     -- JAVA_ARGS
+                     [-d|--dry-run] [-j|--java-home] [-e|--exec]
+                     -- <JAVA_ARGS | EXEC_CMD>
 ```
 
 ## Available features
@@ -45,3 +47,6 @@ can be run.
 
 * Launch javac from a JDK in version 11 or newer:
   `JAVA_HOME=$(archlinux-java-run --min 11 --feature jdk --java-home) && "$JAVA_HOME"/bin/javac ...`
+
+* Launch interactive bash with Java 25 set as $JAVA_HOME and as first element in $PATH:
+  `archlinux-java-run --min 25 --max 25 --exec -- bash -i`
